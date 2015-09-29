@@ -1,0 +1,155 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title>Partisan Politics - Garner the most Constituents!</title>
+    <meta name="description" content="The HTML5 Herald">
+    <meta name="author" content="SitePoint">
+
+    <link href='http://fonts.googleapis.com/css?family=Oswald:400,700,300' rel='stylesheet' type='text/css'>
+    <style>
+        #gameArea {
+            background-color:silver;
+            border:1px dotted #300;
+            height:450px;
+            position:relative;
+            width:450px;
+        }
+        #gameArea::after {
+            clear:both;
+            color:transparent;
+            content:".";
+        }
+        #numberList {
+            background-color:silver;
+            border:1px dotted #300;
+            height:45px;
+            position:relative;
+            width:450px;
+        }
+        #numberList::after {
+            clear:both;
+            color:transparent;
+            content:".";
+        }
+        .numberButton {
+            float:left;
+        }
+        
+        .boardTile {
+            position:absolute;
+        }
+    </style>
+           
+    <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+    <section id="gameArea"></section>
+    <section id="numberList"></section>
+    <section id="sidebar">
+        Info and options here later.
+        
+    </section>
+    <script>
+        var config = {
+            tile: {
+                count: {
+                    x: 9,
+                    y: 9
+                },
+                size: {
+                    x: 50,
+                    y: 50
+                }
+            },
+            numbers: 6,
+            players: [
+                {
+                    color: 'blue',
+                    start: {
+                        x: 0,
+                        y: 8
+                    }
+                },
+                {
+                    color: 'red',
+                    start: {
+                        x: 8,
+                        y: 0
+                    }
+                }
+            ]
+        };
+        var gameBoard, numberList;
+        
+        
+        function resetGame () {
+            //clear and populate board
+            console.log("remove " + gameBoard.children.length);
+            for (var x = 0; x < gameBoard.children.length; x = x) {
+                gameBoard.removeChild(gameBoard.children[0]);
+            }
+            for (var x = 0; x < config.tile.count.x; x++) {
+                for (var y = 0; y < config.tile.count.y; y++) {
+                    var newTile = document.createElement ("div");
+                        newTile.classList.add ("boardTile");
+                        //newTile.innerHTML = x + ", " + y;
+                        newTile.style.width = config.tile.size.x + "px";
+                        newTile.style.height = config.tile.size.y + "px";
+                        newTile.style.top = (config.tile.size.x * x) + "px";
+                        newTile.style.left = (config.tile.size.y * y) + "px";
+                        
+                        var playerFound = false;
+                        for (var i = 0; i < config.players.length; i++) {
+                            if (config.players[i].start.x === x && config.players[i].start.y === y) {
+                                newTile.style.backgroundColor = config.players[i].color;
+                                playerFound = true;
+                            }
+                        }
+                        if (playerFound === false) {
+                            var randomNum = Math.floor((Math.random() * config.numbers) + 1);
+                            newTile.innerHTML = randomNum;
+                        }
+                        
+                    gameBoard.appendChild (newTile);
+                }
+            }
+            
+            for (var z = 0; z < numberList.children.length; z = z) {
+                numberList.removeChild(numberList.children[0]);
+            }
+            for (var z = 0; z < config.numbers; z++) {
+                var newButton = document.createElement ("div");
+                    newButton.classList.add ("numberButton");
+                    newButton.innerHTML = z;
+                    newButton.style.width = config.tile.size.x + "px";
+                    newButton.style.height = config.tile.size.y + "px";
+                    newButton.style.top = (config.tile.size.x * x) + "px";
+                    newButton.style.left = (config.tile.size.y * y) + "px";
+                newButton.addEventListener ("click", function () {
+                    clickButton (this);
+                });
+                numberList.appendChild (newButton);
+            }
+        }
+        
+        function clickButton (obj) {
+            console.log ("Clicked a number:");
+            console.log (obj);
+        }
+        
+        
+        (function () {
+            gameBoard = document.getElementById ("gameArea");
+            numberList = document.getElementById ("numberList");
+            
+            resetGame ();
+        })();
+    </script>
+</body>
+</html>
