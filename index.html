@@ -5,41 +5,210 @@
     <meta charset="utf-8">
 
     <title>Partisan Politics - Garner the most Constituents!</title>
-    <meta name="description" content="The HTML5 Herald">
-    <meta name="author" content="SitePoint">
-
+    <meta name="description" content="Partisan Politics">
+    <meta name="author" content="Andy Seaboyer">
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
     <link href='http://fonts.googleapis.com/css?family=Oswald:400,700,300' rel='stylesheet' type='text/css'>
     <style>
+        * {
+            font-family:Oswald, sans-serif;
+        }
+        html, body, header {
+            margin:0;
+            padding:0;
+        }
+        .clear::after {
+            clear:both;
+            color:transparent;
+            content:".";
+            display:block;
+            height:0;
+        }
+        button {
+            cursor:pointer;
+        }
+        
+        header {
+            background-color:rgba(100,100,100,1);
+            margin:0;
+            padding:0 10px;
+            position:relative;
+            z-index:42;
+        }
+        h1 {
+            margin:0;
+        }
+        h1 i {
+            color:#333;
+        }
+        header p.author {
+            display:inline-block;
+            left: 42px;
+            margin: 0;
+            position: relative;
+            top: -10px;
+        }
+        header p.author a {
+            color:#999;
+        }
+        header p.author a:hover {
+            color:#aaa;
+        }
+        #guideButton {
+            color:#999;
+            font-size:2em;
+            cursor:pointer;
+            position:absolute;
+            right:15px;
+            top:15px;
+        }
+        #guideButton:hover {
+            color:#aaa;
+        }
+        #playerWindow {
+            left:350px;
+            position:absolute;
+            top:0;
+            z-index:50
+        }
+        #playerWindow h2 {
+            display:inline;
+        }
+        #playerScores {
+            display:inline;
+        }
+        
+        #game {
+            
+        }
         #gameArea {
             background-color:silver;
             border:1px dotted #300;
             height:450px;
+            margin:0 auto;
             position:relative;
             width:450px;
         }
-        #gameArea::after {
-            clear:both;
-            color:transparent;
-            content:".";
+        
+        #turnSelect {
+            margin:auto;
+            text-align:center;
+            transition:top 600ms;
+            width:40%;
+            z-index:22;
         }
         #numberList {
-            background-color:silver;
-            border:1px dotted #300;
-            height:45px;
+            margin:0 auto;
             position:relative;
-            width:450px;
-        }
-        #numberList::after {
-            clear:both;
-            color:transparent;
-            content:".";
+            width:290px;
         }
         .numberButton {
+            background-color:#666;
+            color:#999;
+            cursor:pointer;
             float:left;
+            font-size:1.3em;
+            height:48px;
+            line-height:50px;
+            text-align:center;
+            transition:background-color 300ms;
+            width:48px;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        .numberButton:hover {
+            background-color:#633;
+        }
+        .numberButton.picked {
+            background-color:#999;
         }
         
         .boardTile {
+            background-color:#999;
+            border:1px solid #999;
+            color:rgba(255,255,255,0.8);
+            font-size:1.3em;
+            height:48px;
+            line-height:50px;
             position:absolute;
+            text-align:center;
+            transition:all 400ms cubic-bezier(0,.8,1,.3);
+            width:48px;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        .boardTile.selected {
+            color:rgba(255,255,255,0);
+        }
+        .boardTile[data-owner='red'] {
+            background-color:#900;
+        }
+        .boardTile[data-owner='blue'] {
+            background-color:#009;
+        }
+        .boardTile[data-owner='green'] {
+            background-color:#090;
+        }
+        .boardTile .thumbIcon {
+            color:rgba(255,255,255,0);
+            left:0;
+            position:absolute;
+            top:0;
+            width:100%;
+            z-index:11;
+        }
+        .boardTile i {
+            z-index:11;
+        }
+        .boardTile.selected .thumbIcon {
+            color:rgba(255,255,255,0.6);
+            transition:all 600ms cubic-bezier(0,.8,1,.3);
+        }
+        
+        #sidebar {
+            text-align:center;
+        }
+        
+        #winScreen {
+            background-color:#666;
+            border-radius:6px;
+            left:30%;
+            position:absolute;
+            text-align:center;
+            top:-400px;
+            transition:top 600ms;
+            width:40%;
+            z-index:22;
+        }
+        #winScreen.visible {
+            top:20%;
+        }
+        #winText {
+            padding:20px;
+        }
+        #winScreenButtons {
+            padding-bottom:20px;
+        }
+        
+        #guide {
+            background-color:#666;
+            border-radius:6px;
+            left:28%;
+            padding:2%;
+            position:absolute;
+            text-align:center;
+            top:-400px;
+            transition:top 600ms;
+            width:40%;
+            z-index:15;
+        }
+        #guide.visible {
+            top:100px;
         }
     </style>
            
@@ -49,12 +218,36 @@
 </head>
 
 <body>
-    <section id="gameArea"></section>
-    <section id="numberList"></section>
-    <section id="sidebar">
-        Info and options here later.
-        
+    <header>
+        <h1><i class="fa fa-users"></i> Partisan Politics</h1>
+        <p class="author">Created by: <a href="https://twitter.com/andymakesthings"><i class="fa fa-twitter"></i> Andy Seaboyer</a></p>
+        <section id="playerWindow">
+            <h2>Scores:</h2>
+            <div id="playerScores" class="clear"></div>
+        </section>
+        <i class="fa fa-question-circle" id="guideButton"></i>
+    </header>
+    <section id="game">
+        <div id="gameArea"></div>
+        <div id="turnSelect">
+            <div id="turnWindow" class="clear"></div>
+            <div id="numberList" class="clear"></div>
+        </div>
     </section>
+    <section id="winScreen" class="clear visible">
+        <div id="winText">Ready?</div>
+        <div id="winScreenButtons">
+            <button id="startGame">Start</button>
+        </div>
+    </section>
+    <section id="guide" class="clear">
+        <p>Play against a friend as a pair of politicians who are stumping to win-over constituents.</p>
+        <p>When prompted, select a talking point (represented numerically) to stump on. Both candidates will attempt to win over constituents next to them (above, below, left, right) on these talking points. Those new constituents will continue to win over their peers as well.</p>
+        <p>The game is complete when all talking points are addressed. Talking points can not be stumped on more than once.</p>
+        <button id="closeGuide">Close</button>
+        <button id="restartGame">Start/Restart</button>
+    </section>
+    
     <script>
         var config = {
             tile: {
@@ -72,50 +265,150 @@
                 {
                     color: 'blue',
                     start: {
-                        x: 0,
-                        y: 8
+                        x: 1,
+                        y: 7
                     }
                 },
                 {
                     color: 'red',
                     start: {
-                        x: 8,
-                        y: 0
+                        x: 7,
+                        y: 1
                     }
                 }
-            ]
+            ],
+            tileChangeDelay: 200,
+            tileMatchingTimer: {},
+            turn: {
+                number: 0,
+                player: 0,
+                matching: false,
+                next: function () {
+                    var playerCount = config.players.length - 1;
+                    
+                    this.number++;
+                    this.player = this.number % config.players.length;
+                },
+                display: function (theDiv) {
+                    theDiv.innerHTML = "<strong>Next Player's Turn: </strong>" +
+                        config.players[this.player].color;
+                },
+                reset: function () {
+                    this.number = 0;
+                    this.player = 0;
+                }
+            }
         };
-        var gameBoard, numberList;
+        var gameBoard, numberList, turnWindow;
         
+        function gameOver () {
+            var tallies = {};
+            
+            
+            for (var i = 0; i < config.players.length; i++) {
+                tallies[config.players[i].color] = 
+                    document.getElementsByClassName ("selected-" + config.players[i].color).length;
+            }
+            
+            var winner = {
+                count: 0,
+                color: null,
+                tie: false
+            };
+            
+            // compare and calculate winner
+            for (var key in tallies) {
+                if (tallies.hasOwnProperty(key)) {
+                    if (tallies[key] > winner.count) {
+                        winner.count = tallies[key];
+                        winner.color = key;
+                        winner.tie = false;
+                    } else if (tallies[key] == winner.count) {
+                        winner.count = tallies[key];
+                        winner.color = null;
+                        winner.tie = true;
+                    }
+                    // figure out those ties later....
+                }
+            }
+            
+            if (winner.tie) {
+                announceWinner ();
+            } else {
+                announceWinner (winner);
+            }
+        }
+        
+        function startGame () {
+            document.getElementById ("winScreen").classList.remove ("visible");
+                        
+            resetGame ();
+        }
+        
+        function announceWinner (winner) {
+            var winScreen = document.getElementById ("winScreen"),
+                winText = document.getElementById ("winText"),
+                tileCount = document.getElementsByClassName ("boardTile"),
+                ownedTiles = document.getElementsByClassName ("selected-" + winner.color);
+            
+            if (typeof winner === "undefined") {
+                winText.innerHTML = "A tie? REMATCH!";
+            } else {
+                winText.innerHTML = "A rousing win by " + winner.color + "! Winning with " + (tileCount / ownedTiles) + "% of the vote!";
+            }
+            winScreen.classList.add ("visible");
+            
+            console.log ("DISPLAY THE WIN SCREEN");
+        }
         
         function resetGame () {
-            //clear and populate board
+            // clear and reset GUI
+            config.turn.reset ();
+            config.turn.display (turnWindow);
+            // clear and populate board
             console.log("remove " + gameBoard.children.length);
             for (var x = 0; x < gameBoard.children.length; x = x) {
                 gameBoard.removeChild(gameBoard.children[0]);
             }
             for (var x = 0; x < config.tile.count.x; x++) {
                 for (var y = 0; y < config.tile.count.y; y++) {
-                    var newTile = document.createElement ("div");
+                    var newTile = document.createElement ("div"),
+                        playerFound = false;
+                        newTile.classList.add ("boardTile");
                         newTile.classList.add ("boardTile");
                         //newTile.innerHTML = x + ", " + y;
-                        newTile.style.width = config.tile.size.x + "px";
-                        newTile.style.height = config.tile.size.y + "px";
                         newTile.style.top = (config.tile.size.x * x) + "px";
                         newTile.style.left = (config.tile.size.y * y) + "px";
+                        newTile.dataset.owner = "";
+                        newTile.dataset.xPos = x;
+                        newTile.dataset.yPos = y;
+                        newTile.id = "pos-" + x + "-" + y;
                         
-                        var playerFound = false;
-                        for (var i = 0; i < config.players.length; i++) {
-                            if (config.players[i].start.x === x && config.players[i].start.y === y) {
-                                newTile.style.backgroundColor = config.players[i].color;
-                                playerFound = true;
-                            }
+                    for (var i = 0; i < config.players.length; i++) {
+                        if (config.players[i].start.x === x && config.players[i].start.y === y) {
+                            setTileOwner (newTile, config.players[i].color);
+                            newTile.dataset.player = true;
+                            playerFound = true;
                         }
-                        if (playerFound === false) {
-                            var randomNum = Math.floor((Math.random() * config.numbers) + 1);
-                            newTile.innerHTML = randomNum;
+                    }
+                    if (playerFound === false) {
+                        var randomNum = Math.floor((Math.random() * config.numbers) + 1);
+                        newTile.innerHTML = randomNum;
+                        newTile.dataset.number = randomNum;
+                        newTile.classList.add ("tile-" + randomNum);
+                    }
+                    
+                    // create inner items
+                    var thumbIcon = document.createElement ("div");
+                        thumbIcon.classList.add ("thumbIcon");
+                        thumbIcon.innerHTML = "<i class='fa fa-thumbs-up'></i>";
+                        if (playerFound === true) {
+                            thumbIcon.innerHTML = "<i class='fa fa-user'></i>";
+                        } else {
+                            thumbIcon.innerHTML = "<i class='fa fa-thumbs-up'></i>";
                         }
-                        
+                    newTile.appendChild (thumbIcon);
+                    
                     gameBoard.appendChild (newTile);
                 }
             }
@@ -125,30 +418,246 @@
             }
             for (var z = 0; z < config.numbers; z++) {
                 var newButton = document.createElement ("div");
-                    newButton.classList.add ("numberButton");
-                    newButton.innerHTML = z;
-                    newButton.style.width = config.tile.size.x + "px";
-                    newButton.style.height = config.tile.size.y + "px";
+                    newButton.classList.add ("numberButton", "unselectedNumber");
+                    newButton.innerHTML = z+1;
                     newButton.style.top = (config.tile.size.x * x) + "px";
                     newButton.style.left = (config.tile.size.y * y) + "px";
+                    newButton.dataset.picked = "false";
+                    newButton.dataset.number = z+1;
                 newButton.addEventListener ("click", function () {
                     clickButton (this);
                 });
                 numberList.appendChild (newButton);
             }
+            
+            updatePlayerScores ();
+            
+            // update the win screen buttons
+            var winScreenButtons = document.getElementById ("winScreenButtons");
+            winScreenButtons.innerHTML = '';
+            var restartButton = document.createElement ("button");
+                restartButton.id = "restartGame";
+                restartButton.innerHTML = "Restart";
+                restartButton.addEventListener ("click", function () {
+                    startGame ();
+                });
+            winScreenButtons.appendChild (restartButton);
         }
         
         function clickButton (obj) {
-            console.log ("Clicked a number:");
-            console.log (obj);
+            if(obj.dataset.picked === "false") {
+                var useNumber = obj.dataset.number;
+                //console.log ("Clicked a number:" + useNumber);
+                
+                config.turn.matching = true;
+                
+                makeNumberUnavailable (obj);
+                
+                //matchTiles (useNumber);
+                matchTilesToNumber (useNumber);
+                
+                // update the GUI
+                config.turn.next ();
+                config.turn.display (turnWindow);
+                
+                // check how many tiles remain
+                var remainingNumbers = document.getElementsByClassName ("unselectedNumber");
+                console.log (remainingNumbers.length + " selections left...");
+                if (remainingNumbers.length <= 0) {
+                    gameOver ();
+                }
+            }
         }
         
+        // Get all of the tiles that match this number
+        function matchTilesToNumber (num) {
+            var matchedTilesCount = 0,
+                matchingTiles = document.getElementsByClassName ("tile-" + num),
+                tilesToUpdate = [];
+            
+            //console.log (num);
+            //console.log (matchingTiles);
+            //console.log (matchingTiles.length);
+            
+            // check for matching tiles
+            for (var i=0; i < matchingTiles.length; i++) {
+                // check neighboring tiles
+                var validColorChange = checkForcolorChange (matchingTiles[i]);
+                if (validColorChange !== null) {
+                    tilesToUpdate.push ({"tile": matchingTiles[i], "color":validColorChange});
+                }
+            }
+            
+            // update the tiles
+            if (tilesToUpdate.length > 0) {
+                for (var i=0; i < tilesToUpdate.length; i++) {
+                    setTileOwner (tilesToUpdate[i].tile, tilesToUpdate[i].color);
+                }
+                
+                //console.log ("Updated tile count: " + tilesToUpdate.length);
+                
+                config.tileMatchingTimer = window.setTimeout( function () {
+                    matchTilesToNumber (num);
+                    updatePlayerScores ();
+                }, config.tileChangeDelay);
+                
+            } else {
+                
+                console.log ("No tiles to update.");
+                
+                // don't check for more updates, allow players to pick again
+                config.turn.matching = false;
+                window.clearTimeout (config.tileChangeDelay);
+            }
+        }
+        
+        function checkForcolorChange (tile) {
+            var tilePos = {
+                x: parseInt (tile.dataset.xPos),
+                y: parseInt (tile.dataset.yPos)
+            },
+            neighbors = [],
+            playerCounts = {};
+            
+            // If the tile is already won, return null
+            if(tile.dataset.owner !== "") { return null; }
+            
+            for (var i=0; i < config.players.length; i++) {
+                playerCounts[config.players[i].color] = 0;
+            }
+            
+            neighbors.push (document.getElementById 
+                                ("pos-" + (tilePos.x - 1) + "-" + tilePos.y));
+            neighbors.push (document.getElementById 
+                                ("pos-" + (tilePos.x + 1) + "-" + tilePos.y));
+            neighbors.push (document.getElementById 
+                                 ("pos-" + tilePos.x + "-" + (tilePos.y - 1)));
+            neighbors.push (document.getElementById 
+                                 ("pos-" + tilePos.x + "-" + (tilePos.y + 1)));
+            
+            for (var i = 0; i < neighbors.length; i++) {
+                if (neighbors[i] !== null && neighbors[i].dataset.owner !== "") {
+                    var color = neighbors[i].dataset.owner;
+                    if (color != "") {
+                        playerCounts[color] += 1;
+                    }
+                }
+            }
+            
+            var winner = {
+                count: 0,
+                color: null,
+                tie: false
+            };
+            // compare and calculate winner
+            for (var key in playerCounts) {
+                if (playerCounts.hasOwnProperty(key)) {
+                    if (playerCounts[key] > winner.count) {
+                        winner.count = playerCounts[key];
+                        winner.color = key;
+                        winner.tie = false;
+                    } else if (playerCounts[key] == winner.count) {
+                        winner.count = playerCounts[key];
+                        winner.color = null;
+                        winner.tie = true;
+                    }
+                    // figure out those ties later....
+                }
+            }
+            
+            return winner.color;
+        }
+        
+        function matchTiles (num) {
+            // Get all matching tiles
+            var matchedTilesCount = 0,
+                matchingTiles = document.getElementsByClassName ("tile-" + num);
+            //console.log (matchingTiles);
+            
+            for (var i = 0; i < matchingTiles.length; i++ ) {
+                //matchingTiles[i].classList.add ("picked");
+                var tile = {};
+                tile.pos = {
+                    x: parseInt (matchingTiles[i].dataset.xPos),
+                    y: parseInt (matchingTiles[i].dataset.yPos)
+                };
+                tile.neighbors = [];
+                tile.neighbors.push (document.getElementById 
+                                    ("pos-" + (tile.pos.x - 1) + "-" + tile.pos.y));
+                tile.neighbors.push (document.getElementById 
+                                    ("pos-" + (tile.pos.x + 1) + "-" + tile.pos.y));
+                tile.neighbors.push (document.getElementById 
+                                     ("pos-" + tile.pos.x + "-" + (tile.pos.y - 1)));
+                tile.neighbors.push (document.getElementById 
+                                     ("pos-" + tile.pos.x + "-" + (tile.pos.y + 1)));
+                //console.log(tile.neighbors);
+                for (var j = 0; j < tile.neighbors.length; j++ ) {
+                    //console.log(tile.neighbors[j]);
+                    if(tile.neighbors[j] !== null) {
+                        if(tile.neighbors[j].dataset.owner !== null && 
+                           tile.neighbors[j].dataset.owner !== "") {
+                            setTileOwner (matchingTiles[i], tile.neighbors[j].dataset.owner);
+                            matchedTilesCount++;
+                        }
+                    }
+                }
+            }
+            console.log (matchedTilesCount + " tiles matched.");
+            if (matchedTilesCount > 0) {
+                console.log("check next in chain: rethink recursive, causing an endless loop as is.");
+                //matchTiles(num);
+            }
+            
+            updatePlayerScores ();
+        }
+        
+        function makeNumberUnavailable (obj) {
+            //console.log (obj);
+            obj.dataset.picked = "true";
+            obj.classList.add ("picked");
+            obj.classList.remove ("unselectedNumber");
+        }
+        
+        function setTileOwner (tile, color) {
+            tile.dataset.owner = color;
+            tile.classList.add ("selected" );
+            tile.classList.add ("selected-" + color);
+            //tile.classList.add ("picked");
+            //console.log (tile);
+        }
+        
+        function updatePlayerScores () {
+            var scoresDiv = document.getElementById ("playerScores");
+            scoresDiv.innerHTML = ""; // clear the div
+            
+            for (var i = 0; i < config.players.length; i++) {
+                var score = document.createElement ("span");
+                    score.classList.add ("playerScore");
+                    score.innerHTML = config.players[i].color + ": <span>" + 
+                    (document.getElementsByClassName ("selected-" + config.players[i].color).length - 1 + "</span>");
+                scoresDiv.appendChild (score);
+            }
+        }
         
         (function () {
             gameBoard = document.getElementById ("gameArea");
             numberList = document.getElementById ("numberList");
+            turnWindow = document.getElementById ("turnWindow");
             
-            resetGame ();
+            // start game action
+            document.getElementById ("startGame").addEventListener ("click", function () {
+                startGame ();
+            });
+            document.getElementById ("guideButton").addEventListener ("click", function () {
+                document.getElementById ("guide").classList.toggle ("visible");
+            });
+            document.getElementById ("closeGuide").addEventListener ("click", function () {
+                document.getElementById ("guide").classList.remove ("visible");
+            });
+            document.getElementById ("restartGame").addEventListener ("click", function () {
+                document.getElementById ("guide").classList.remove ("visible");
+                startGame ();
+            });
         })();
     </script>
 </body>
