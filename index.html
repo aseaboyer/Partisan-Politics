@@ -280,6 +280,7 @@
             tileChangeDelay: 200,
             tileMatchingTimer: {},
             turn: {
+                selectedNumbers: [],
                 number: 0,
                 player: 0,
                 matching: false,
@@ -290,8 +291,10 @@
                     this.player = this.number % config.players.length;
                 },
                 display: function (theDiv) {
-                    theDiv.innerHTML = "<strong>Next Player's Turn: </strong>" +
-                        config.players[this.player].color;
+                    theDiv.innerHTML = "<strong>" + 
+                        config.players[this.player].color.charAt(0).toUpperCase() +
+                        config.players[this.player].color.slice(1) +
+                        "'s Turn: </strong> Select a talking point to stump on!";
                 },
                 reset: function () {
                     this.number = 0;
@@ -354,7 +357,10 @@
             if (typeof winner === "undefined") {
                 winText.innerHTML = "A tie? REMATCH!";
             } else {
-                winText.innerHTML = "A rousing win by " + winner.color + "! Winning with " + (tileCount / ownedTiles) + "% of the vote!";
+                winText.innerHTML = "A rousing win by " + winner.color + "! Support from " +
+                    (ownedTiles.length - 1) + " of " + tileCount.length + " constituents.";
+                console.log (tileCount.length);
+                console.log (ownedTiles.length);
             }
             winScreen.classList.add ("visible");
             
@@ -365,8 +371,9 @@
             // clear and reset GUI
             config.turn.reset ();
             config.turn.display (turnWindow);
+            
             // clear and populate board
-            console.log("remove " + gameBoard.children.length);
+            console.log("remove " + gameBoard.children.length + " tiles");
             for (var x = 0; x < gameBoard.children.length; x = x) {
                 gameBoard.removeChild(gameBoard.children[0]);
             }
@@ -374,7 +381,6 @@
                 for (var y = 0; y < config.tile.count.y; y++) {
                     var newTile = document.createElement ("div"),
                         playerFound = false;
-                        newTile.classList.add ("boardTile");
                         newTile.classList.add ("boardTile");
                         //newTile.innerHTML = x + ", " + y;
                         newTile.style.top = (config.tile.size.x * x) + "px";
@@ -409,25 +415,34 @@
                         }
                     newTile.appendChild (thumbIcon);
                     
+                    newTile.addEventListener ("click", function () {
+                        playerClickTile (this);
+                    });
+                    
                     gameBoard.appendChild (newTile);
                 }
             }
             
+            // clear the numberList
+            config.turn.selectedNumbers.length = 0;
+            config.turn.selectedNumbers = [];
             for (var z = 0; z < numberList.children.length; z = z) {
                 numberList.removeChild(numberList.children[0]);
             }
             for (var z = 0; z < config.numbers; z++) {
                 var newButton = document.createElement ("div");
                     newButton.classList.add ("numberButton", "unselectedNumber");
+                    newButton.id = "numberButton-" + (z + 1);
                     newButton.innerHTML = z+1;
                     newButton.style.top = (config.tile.size.x * x) + "px";
                     newButton.style.left = (config.tile.size.y * y) + "px";
                     newButton.dataset.picked = "false";
-                    newButton.dataset.number = z+1;
+                    newButton.dataset.number = (z + 1);
                 newButton.addEventListener ("click", function () {
                     clickButton (this);
                 });
                 numberList.appendChild (newButton);
+                config.turn.selectedNumbers[(z+1)] = false;
             }
             
             updatePlayerScores ();
@@ -444,27 +459,39 @@
             winScreenButtons.appendChild (restartButton);
         }
         
+        function playerClickTile (obj) {
+            var objData = obj.dataset;
+            if (objData.owner === "") {
+            console.log (objData.owner);
+                clickButton (obj);
+            }
+        }
+        
         function clickButton (obj) {
-            if(obj.dataset.picked === "false") {
+            if(config.turn.matching != true) {
                 var useNumber = obj.dataset.number;
                 //console.log ("Clicked a number:" + useNumber);
                 
-                config.turn.matching = true;
-                
-                makeNumberUnavailable (obj);
-                
-                //matchTiles (useNumber);
-                matchTilesToNumber (useNumber);
-                
-                // update the GUI
-                config.turn.next ();
-                config.turn.display (turnWindow);
-                
-                // check how many tiles remain
-                var remainingNumbers = document.getElementsByClassName ("unselectedNumber");
-                console.log (remainingNumbers.length + " selections left...");
-                if (remainingNumbers.length <= 0) {
-                    gameOver ();
+                    if(config.turn.selectedNumbers[useNumber] === false) {
+                    config.turn.selectedNumbers[useNumber] = true;
+                    
+                    config.turn.matching = true;
+
+                    makeNumberUnavailable (useNumber);
+
+                    //matchTiles (useNumber);
+                    matchTilesToNumber (useNumber);
+
+                    // update the GUI
+                    config.turn.next ();
+                    config.turn.display (turnWindow);
+
+                    // check how many tiles remain
+                    var remainingNumbers = document.getElementsByClassName ("unselectedNumber");
+                    console.log (remainingNumbers.length + " selections left...");
+                    if (remainingNumbers.length <= 0) {
+                        gameOver ();
+                    }
                 }
             }
         }
@@ -611,7 +638,8 @@
             updatePlayerScores ();
         }
         
-        function makeNumberUnavailable (obj) {
+        function makeNumberUnavailable (num) {
+            var obj = document.getElementById ("numberButton-" + num);
             //console.log (obj);
             obj.dataset.picked = "true";
             obj.classList.add ("picked");
