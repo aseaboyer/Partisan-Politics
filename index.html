@@ -145,6 +145,9 @@
         .boardTile.selected {
             color:rgba(255,255,255,0);
         }
+        .boardTile[data-owner='tie'] {
+            background-color:#999;
+        }
         .boardTile[data-owner='red'] {
             background-color:#900;
         }
@@ -462,7 +465,6 @@
         function playerClickTile (obj) {
             var objData = obj.dataset;
             if (objData.owner === "") {
-            console.log (objData.owner);
                 clickButton (obj);
             }
         }
@@ -500,7 +502,8 @@
         function matchTilesToNumber (num) {
             var matchedTilesCount = 0,
                 matchingTiles = document.getElementsByClassName ("tile-" + num),
-                tilesToUpdate = [];
+                tilesToUpdate = [],
+                tiedTiles = [];
             
             //console.log (num);
             //console.log (matchingTiles);
@@ -511,13 +514,20 @@
                 // check neighboring tiles
                 var validColorChange = checkForcolorChange (matchingTiles[i]);
                 if (validColorChange !== null) {
-                    tilesToUpdate.push ({"tile": matchingTiles[i], "color":validColorChange});
+                    if (validColorChange === "TIE") {
+                        tiedTiles.push ({"tile": matchingTiles[i], "color":"tie"});
+                    } else {
+                        tilesToUpdate.push ({"tile": matchingTiles[i], "color":validColorChange});
+                    }
                 }
             }
             
             // update the tiles
             if (tilesToUpdate.length > 0) {
                 for (var i=0; i < tilesToUpdate.length; i++) {
+                    setTileOwner (tilesToUpdate[i].tile, tilesToUpdate[i].color);
+                }
+                for (var i=0; i < tiedTiles.length; i++) {
                     setTileOwner (tilesToUpdate[i].tile, tilesToUpdate[i].color);
                 }
                 
@@ -591,6 +601,10 @@
                     // figure out those ties later....
                 }
             }
+            /*console.log (winner.tie);
+            if (winner.tie === true) {
+                return "TIE";
+            }*/
             
             return winner.color;
         }
@@ -686,6 +700,9 @@
                 document.getElementById ("guide").classList.remove ("visible");
                 startGame ();
             });
+            
+            
+            console.log ("DEV NOTE: Tieing tiles doesn't return 'TIE', so tied tiles doesn't work atm.");
         })();
     </script>
 </body>
